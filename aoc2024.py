@@ -24,12 +24,10 @@ def run_tests(days):
         day = globals()[libname]
         print(f"{libname} START")
         print("**********************")
-        data = open(f"res/{libname}.txt").readlines()
-
-        start = timer()
-        part1 = day.part1(data)
-        part2 = day.part2(data)
-        end = timer()
+        with open(f"res/{libname}.txt") as data:
+            start = timer()
+            part1, part2 = day.run(data)
+            end = timer()
         print(f"Part1: {part1}")
         print(f"Part1: {part2}")
 
