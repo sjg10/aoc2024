@@ -29,7 +29,7 @@ def run_tests(days):
             part1, part2 = day.run(data)
             end = timer()
         print(f"Part1: {part1}")
-        print(f"Part1: {part2}")
+        print(f"Part2: {part2}")
 
         print(f"Elapsed time {(end - start) * 1000:.2f}ms")
         print("**********************")
