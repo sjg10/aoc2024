@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from itertools import permutations, product
 from functools import cache
 
+
 @dataclass(frozen=True, order=True)
 class Pos:
     r: int
@@ -12,6 +13,7 @@ class Pos:
 
     def __sub__(self, o):
         return Pos(self.r - o.r, self.c - o.c)
+
 
 class NumPads:
     NUMLOCS = {
@@ -68,10 +70,15 @@ class NumPads:
         return False
 
     @cache
-    def gennext(w): # TODO: cache better?!?
+    def get_shortest_path(pathsegment, robots):
+        """
+        For a single path segment of instructions ending with A,
+        give the length of the shortest number of instructions
+        to input this sequence, given number of robots above
+        """
         cur = NumPads.DLOCS["A"]
-        nws = []
-        for p in w:
+        possible_presses = [""]
+        for p in pathsegment:
             nxt = NumPads.DLOCS[p]
             newways = [
                 x + "A"
@@ -80,14 +87,20 @@ class NumPads:
                     NumPads.dirtostr(nxt - cur),
                 )
             ]
+            possible_presses = ["".join(x) for x in product(possible_presses, newways)]
             cur = nxt
-            if len(nws) == 0:
-                nws = newways
-            else:
-                nws = ["".join(x) for x in product(nws, newways)]
-        return nws
+        if robots == 0:
+            return min(len(x) for x in possible_presses)
+        else:
+            return min(
+                sum(
+                    NumPads.get_shortest_path(p + "A", robots - 1)
+                    for p in w[:-1].split("A")
+                )
+                for w in possible_presses
+            )
 
-    def move(cur, target, midrobots):
+    def move(cur, target, num_dpad_robots):
         ways = [
             x + "A"
             for x in filter(
@@ -95,28 +108,19 @@ class NumPads:
                 NumPads.dirtostr(target - cur),
             )
         ]
-
-        for i in range(midrobots):
-            nwys = []
-            for w in ways:
-                nwys.extend(NumPads.gennext(w))
-            ways = nwys
-        return ways
+        return min(NumPads.get_shortest_path(w, num_dpad_robots - 1) for w in ways)
 
     def run(self, midrobots):
         ret = 0
         for t in self.targets:
-            c = ""
+            shortest = 0
             lastdigit = "A"
             for digit in t:
                 target = self.NUMLOCS[digit]
-                mvs = NumPads.move(self.NUMLOCS[lastdigit], target, midrobots)
-                mv = min(mvs, key=len)
-                print(f"From {lastdigit} to {digit} = {mv}")
-                c += mv
+                x = NumPads.move(self.NUMLOCS[lastdigit], target, midrobots)
+                shortest += x
                 lastdigit = digit
-            print("DONE", t, c, len(c))
-            ret += len(c) * int(t[:-1])
+            ret += shortest * int(t[:-1])
         return ret
 
 

@@ -10,3 +10,4 @@ def test_day21():
 379A"""
     p1, p2 = run(iter(inp.splitlines()))
     assert p1 == 126384
+    assert p2 == 154115708116294
